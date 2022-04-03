@@ -1,4 +1,4 @@
-# Getting Started with Create React App
+# Getting Started with Node App
 
 This project contains Server Node Application for Video call
 
