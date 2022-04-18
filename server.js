@@ -206,6 +206,11 @@ io.on('connection', (socket) => {
 
         groupCallRooms.push(newGroupCallRoom);
         console.log(groupCallRooms);
+        for(var key in peers){
+            if(peers[key].socketId === socket.id) {
+              peers[key].roomId = roomId
+            }
+          }
 
         //save call initi data
         saveCallInitDetail(newGroupCallRoom);
@@ -222,16 +227,11 @@ io.on('connection', (socket) => {
             streamId: data.streamId
         });
         socket.join(data.roomId);
-
-        // below logic to remove the answer notification from all
-        // groupCallRooms = groupCallRooms.filter(room => room.socketId !== data.hostSocketId);
-        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ join group call click reqest");
-        console.log(groupCallRooms);
-        // console.log(data);
-        // io.sockets.emit('broadcast', {
-        //   event: broadcastEventTypes.Remove_CALL_ANS,
-        //   groupCallRooms
-        // });
+        for(var key in peers) {
+            if(peers[key].socketId === socket.id) {
+              peers[key].roomId = data.roomId
+            }
+        }
 
     });
 
