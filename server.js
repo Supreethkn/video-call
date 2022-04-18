@@ -114,6 +114,25 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('user disconnected');
+        var roomId;
+     // on socket closed save the video using roomid 
+     console.log("********** call the functiom ****************");
+     console.log(socket.id);
+     console.log(peers);
+     
+        for(var key in groupCallRooms) {
+            console.log(groupCallRooms[key]);
+            if(groupCallRooms[key].socketId === socket.id ){
+                roomId = groupCallRooms[key].roomId;
+            }
+        }
+
+        io.emit('machine-call-user-end', {
+        peerId: peers,
+        machineSocket: socket.id,
+        roomId: roomId,
+        });
+
         peers = peers.filter(peer => peer.socketId !== socket.id);
         io.sockets.emit('broadcast', {
             event: broadcastEventTypes.ACTIVE_USERS,
@@ -215,6 +234,18 @@ io.on('connection', (socket) => {
         // });
 
     });
+
+    socket.on('machine-call-user-left', (data) => {
+        // call the method used by operator-disconnecting
+        console.log("############################################");
+        console.log(data)
+        io.emit('machine-call-user-left', {
+          streamId: data.streamId,
+          peerId: data.peerId,
+          machineSocket: data.machineSocket,
+        });
+    });
+
 
     socket.on('group-call-user-left', (data) => {
         socket.leave(data.roomId);
