@@ -79,6 +79,8 @@ const io = socket(server, {
 
 let peers = [];
 let groupCallRooms = [];
+let setData = '';
+let dataRow = '';
 
 const broadcastEventTypes = {
     ACTIVE_USERS: 'ACTIVE_USERS',
@@ -341,7 +343,8 @@ app.post("/createUser", async(req, res) => {
     const isAdmin = req.body.isAdmin;
     db.getConnection(async(err, connection) => {
         if (err) throw (err)
-        const sqlSearch = "SELECT * FROM usertable WHERE userId = ?"
+        // const sqlSearch = "SELECT * FROM usertable WHERE userId = ?"
+        const sqlSearch = "SELECT * FROM usertable WHERE userName = ?"
         const search_query = mysql.format(sqlSearch, [user])
         const sqlInsert = "INSERT INTO usertable VALUES (0,?,?,?,?)"
         const insert_query = mysql.format(sqlInsert, [user, hashedPassword, isAdmin, email])
@@ -430,8 +433,18 @@ app.post("/deleteUser", async(req, res) => {
         await connection.query(search_query, async(err, result) => {
             if (err) throw (err)
             console.log("------> Search Results")
-            console.log(result.length)
-            if (result.length == 0) {
+            Object.keys(result).forEach(function(key) {
+                dataRow = result[key];
+                setData = dataRow.isAdmin;
+              });
+              console.log('check isadmin',dataRow.isAdmin)
+              console.log(result.length)
+              if(dataRow.isAdmin == '1'){
+                connection.release()
+                console.log("------> admin cannot delete")
+                res.sendStatus(409)
+              }
+            else if (result.length == 0) {
                 connection.release()
                 console.log("------> User Does not exists")
                     //  res.sendStatus(409)
