@@ -18,6 +18,11 @@ app.use(function(req, res, next) {
     next();
 });
 const mysql = require("mysql")
+
+var formidable = require('formidable');
+const fs = require('fs');
+const path = require('path')
+
 require('dotenv').config();
 const DB_HOST = process.env.DB_HOST
 const DB_USER = process.env.DB_USER
@@ -659,4 +664,51 @@ app.get("/getMissedCallReport", async(req, res) => {
             res.send(result)
         })
     })
+});
+
+
+app.post("/upload", async (req,res) => {
+  var form = new formidable.IncomingForm();
+  const uploadFolder = path.join(__dirname, "public", "files");
+  form.uploadDir = uploadFolder;
+  form.newFilename = form.originalFilename;
+
+  form.parse(req, function(err, fields, files) {
+      console.log(files);
+      if (err) {
+          console.log("Error parsing the files");
+          return res.status(400).json({
+              status: "Fail",
+              message: "There was an error parsing the files",
+              error: err,
+            });
+      }
+      const file = files.my_file;
+      const fileName = file.originalFilename;
+      console.log(file);
+      console.log(file.filepath);
+      fs.renameSync(file.filepath, path.join(uploadFolder, fileName));
+      return;
+  });
+  var json = JSON.stringify({ 
+      created: true, 
+       });
+    res.end(json);
+});
+
+app.post("/download", async (req,res) => {
+  console.log(req);
+  try {
+  const uploadFolder = path.join(__dirname, "public", "files",req.body.url);
+  console.log(uploadFolder+'.mp4');
+  // res.download(uploadFolder+'.mp4');
+  const header = {
+    'Content-Length': fs.statSync(uploadFolder+'.mp4').size,
+    'Content-Type': 'video/mp4',
+    };
+  res.writeHead(200, header);
+  fs.createReadStream(uploadFolder+'.mp4').pipe(res);
+  }catch (e) {
+    res.status(400);
+  }
 });
