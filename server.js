@@ -20,7 +20,6 @@ app.use(function(req, res, next) {
 const mysql = require("mysql")
 
 var formidable = require('formidable');
-const fs = require('fs');
 const path = require('path')
 
 require('dotenv').config();
