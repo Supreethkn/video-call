@@ -10,6 +10,12 @@ In the project directory, you can run:
 
 ### `npm install`
 
+## Step 2 migrate table
+### `node migration.js up --migrate-all`
+
+
+## Step 3 seed table
+### `npm run seed`
 
 ## Step 2
 ### `npm start`
