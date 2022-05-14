@@ -58,6 +58,10 @@ const server = https.createServer(httpsOptions, app).listen(PORT, () => {
     console.log(`https://10.10.2.7:${PORT}`);
 });
 
+// const server = app.listen(PORT, () => {
+//     console.log(`server is listening on port ${PORT}`);
+//     console.log(`http://localhost:${PORT}`);
+//   });
 
 
 db.getConnection((err, connection) => {
