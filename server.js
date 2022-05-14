@@ -132,7 +132,6 @@ io.on('connection', (socket) => {
                 roomId = groupCallRooms[key].roomId;
             }
         }
-
         io.emit('machine-call-user-end', {
         peerId: peers,
         machineSocket: socket.id,
@@ -209,6 +208,7 @@ io.on('connection', (socket) => {
             roomId: roomId,
             isAns: false
         };
+        
 
         groupCallRooms.push(newGroupCallRoom);
         console.log(groupCallRooms);
@@ -241,6 +241,21 @@ io.on('connection', (socket) => {
 
     });
 
+    socket.on('start-video', (data) => {
+        io.to(data.roomId).emit('start-video', {
+            peerId: data.peerId,
+            streamId: data.streamId,
+            data: data
+        });
+        // socket.join(data.roomId);
+        // for(var key in peers) {
+        //     if(peers[key].socketId === socket.id) {
+        //       peers[key].roomId = data.roomId
+        //     }
+        // }
+
+    });
+
     socket.on('machine-call-user-left', (data) => {
         // call the method used by operator-disconnecting
         console.log("############################################");
@@ -251,6 +266,18 @@ io.on('connection', (socket) => {
           machineSocket: data.machineSocket,
         });
     });
+
+    //test
+    // socket.on('user-call-machine-left', (data) => {
+    //     // call the method used by operator-disconnecting
+    //     console.log("############################################");
+    //     console.log(data)
+    //     io.emit('user-call-machine-left', {
+    //       streamId: data.streamId,
+    //       peerId: data.peerId,
+    //       machineSocket: data.machineSocket,
+    //     });
+    // });
 
 
     socket.on('group-call-user-left', (data) => {
@@ -540,7 +567,9 @@ app.post("/createAuditReport", async(req, res) => {
     const callEndTime = req.body.callEndTime;
     const reason = req.body.reason;;
     const callOrigin = req.body.callOrigin;
-    const recording = req.body.recording;
+    // const recording = req.body.recording;
+    const operator_recording = req.body.recording;
+    const user_recording = req.body.recording1;
     const today = new Date(callStartTime);
     const endDate = new Date(callEndTime);
     const minutes = parseInt(Math.abs(endDate.getTime() - today.getTime()) / (1000 * 60) % 60);
@@ -549,12 +578,12 @@ app.post("/createAuditReport", async(req, res) => {
     const roomId = req.body.roomId;
     db.getConnection(async(err, connection) => {
         if (err) throw (err)
-        const sqlInsert = "INSERT INTO auditReports VALUES (0,?,?,?,?,?,?,?,?)"
-        const insert_query = mysql.format(sqlInsert, [callStartTime, operatorName, callDuration, callEndTime, callOrigin, reason, recording, roomId])
+        const sqlInsert = "INSERT INTO auditReports VALUES (0,?,?,?,?,?,?,?,?,?)"
+        const insert_query = mysql.format(sqlInsert, [callStartTime, operatorName, callDuration, callEndTime, callOrigin, reason, operator_recording,user_recording, roomId])
         await connection.query(insert_query, (err, result) => {
             connection.release()
             if (err) throw (err)
-            console.log("--------> Created new User ",callOrigin + 'recording', recording)
+            console.log("--------> Created new User ",callOrigin + 'recording', operator_recording)
             console.log(result.insertId)
             res.writeHead(200, { "Content-Type": "application/json" });
             var json = JSON.stringify({
