@@ -685,6 +685,32 @@ app.post("/saveCallDetails", async(req, res) => {
     })
 });
 
+app.post("/saveuserdata", async(req, res) => {
+    // const kioskID = req.body.kiosk;
+    const socketID = req.body.socketid;
+    // const kioskStatus = req.body.status;
+    const Uertype = req.body.usertype;
+    console.log('------------',req);
+    db.getConnection(async(err, connection) => {
+        if (err) throw (err)
+        const sqlInsert = "INSERT INTO userdetails VALUES (0,?,?)"
+        // const insert_query = mysql.format(sqlInsert, [kioskID, socketID, kioskStatus, Uertype])
+        const insert_query = mysql.format(sqlInsert, [socketID, Uertype])
+        await connection.query(insert_query, (err, result) => {
+            connection.release()
+            if (err) throw (err)
+            console.log("--------> Capture Call Details")
+            console.log(result.insertId)
+            res.writeHead(200, { "Content-Type": "application/json" });
+            var json = JSON.stringify({
+                created: true,
+            });
+            res.end(json);
+
+        })
+    })
+});
+
 app.get("/getMissedCallReport", async(req, res) => {
     db.getConnection(async(err, connection) => {
         if (err) throw (err)
@@ -697,6 +723,49 @@ app.get("/getMissedCallReport", async(req, res) => {
         })
     })
 });
+
+
+app.get("/getusercalldetails", async(req, res) => {
+    db.getConnection(async(err, connection) => {
+        if (err) throw (err)
+        const sqlSearch = "select * from userDB.userdetails;"
+        const search_query = mysql.format(sqlSearch, [])
+        await connection.query(search_query, async(err, result) => {
+            if (err) throw (err)
+            console.log(result)
+            res.send(result)
+        })
+    })
+});
+
+app.post("/userupload", async (req,res) => {
+    var form = new formidable.IncomingForm();
+    const uploadFolder = path.join(__dirname, "public", "files");
+    form.uploadDir = uploadFolder;
+    form.newFilename = form.originalFilename;
+  
+    form.parse(req, function(err, fields, files) {
+        console.log(files);
+        if (err) {
+            console.log("Error parsing the files");
+            return res.status(400).json({
+                status: "Fail",
+                message: "There was an error parsing the files",
+                error: err,
+              });
+        }
+        const file = files.my_file;
+        const fileName = file.originalFilename;
+        console.log('filenames',file);
+        console.log(file.filepath);
+        fs.renameSync(file.filepath, path.join(uploadFolder, fileName));
+        return;
+    });
+    var json = JSON.stringify({ 
+        created: true, 
+         });
+      res.end(json);
+  });
 
 
 app.post("/upload", async (req,res) => {
@@ -717,7 +786,7 @@ app.post("/upload", async (req,res) => {
       }
       const file = files.my_file;
       const fileName = file.originalFilename;
-      console.log(file);
+      console.log('filenames',file);
       console.log(file.filepath);
       fs.renameSync(file.filepath, path.join(uploadFolder, fileName));
       return;
@@ -727,6 +796,7 @@ app.post("/upload", async (req,res) => {
        });
     res.end(json);
 });
+
 
 app.post("/download", async (req,res) => {
   console.log(req);
@@ -744,3 +814,23 @@ app.post("/download", async (req,res) => {
     res.status(400);
   }
 });
+
+app.post("/usercleanup", async (req,res) => {
+    console.log('user clean up');
+    console.log('sai',req.body);
+    const data = {
+        id: req.body.socketID,
+        type: req.body.userType,
+        name: req.body.userName
+    }
+    // socket.emit('connection', null);
+    console.log('new user connected');
+    console.log(socket.id);
+    // io.to(data).emit('user-clean-up');
+    io.emit('user-clean-up', {
+        id: req.body.socketID,
+        type: req.body.userType,
+        name: req.body.userName
+        });
+    console.log('user clean up end');
+  });
