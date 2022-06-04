@@ -690,7 +690,7 @@ app.post("/saveuserdata", async(req, res) => {
     const socketID = req.body.socketid;
     // const kioskStatus = req.body.status;
     const Uertype = req.body.usertype;
-    console.log('------------',req);
+    console.log('===============>save user details',req.body);
     db.getConnection(async(err, connection) => {
         if (err) throw (err)
         const sqlInsert = "INSERT INTO userdetails VALUES (0,?,?)"
@@ -732,7 +732,7 @@ app.get("/getusercalldetails", async(req, res) => {
         const search_query = mysql.format(sqlSearch, [])
         await connection.query(search_query, async(err, result) => {
             if (err) throw (err)
-            console.log(result)
+            console.log('++++++++++++++++++++++getusercalldetails',result)
             res.send(result)
         })
     })
@@ -821,7 +821,8 @@ app.post("/usercleanup", async (req,res) => {
     const data = {
         id: req.body.socketID,
         type: req.body.userType,
-        name: req.body.userName
+        name: req.body.userName,
+        // kiosk: req.body.kioskID
     }
     // socket.emit('connection', null);
     console.log('new user connected');
@@ -830,7 +831,12 @@ app.post("/usercleanup", async (req,res) => {
     io.emit('user-clean-up', {
         id: req.body.socketID,
         type: req.body.userType,
-        name: req.body.userName
+        name: req.body.userName,
+        // kiosk: req.body.kioskID
         });
     console.log('user clean up end');
+    var json = JSON.stringify({ 
+        created: true, 
+         });
+      res.end(json);
   });
