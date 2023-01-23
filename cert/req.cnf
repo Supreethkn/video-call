@@ -8,10 +8,11 @@ ST = KA
 L = BANGALORE
 O = Organization Name
 OU = Organizational Unit 
-CN = 10.10.2.7
+CN = 52.140.57.72
 [v3_req]
 keyUsage = critical, digitalSignature, keyAgreement
 extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 [alt_names]
-IP.1 = 10.10.2.7
+IP.1 = 52.140.57.72
+DNS.1 = localhost
